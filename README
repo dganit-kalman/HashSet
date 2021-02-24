@@ -1,0 +1,186 @@
+dganit.kalman
+
+
+=============================
+=      File description     =
+=============================
+ClosedHashCell.java - implements a single cell in the closedHashSet.
+    Main methods:
+        1. constructor - each cell has a default with value and flag if the value has been deleted.
+        2. addMe - adding a value to this cell if this cell is empty.
+        3. deleteMe - deleting a value to this cell if the value is in this cell.
+
+OpenHashCell.java - Implements a single cell in the closedHashSet.
+    Main methods:
+        1. constructor - each cell has a default with linkedList.
+        2. addMe - adding a value to this cell if this cell is empty.
+        3. deleteMe - deleting a value to this cell if the value is in this cell.
+        4. isIn - checks if a specific value is in this cell.
+        5. allItems - returns all the items in this cell in an array.
+
+
+=============================
+=          Design           =
+=============================
+2. For the OpenHashSet I made a wrapper-class. This class represents a single cell in the OpenHashSet, which
+    means that each cell contains a linkedList. In the wrapper-class I made all the methods which are
+    connected to the cell - as adding, deleting etc. - and then, when the OpenHashSet needs to do something in
+    a specific cell, it goes directly to the wrapper. It's easier and clearer seeing that OpenHashSet is built
+    from a number of cells.
+
+3. The deletion's progress in the ClosedHashSet worked this way: At the beginning, I checked if the value I
+    want to delete is in the ClosedHashSet. If the value isn't in the ClosedHashSet, the method returns false.
+    If the HashSet contains the value, I try deleting the value. the deletion progress happens in the
+    wrapper-class of the ClosedHashSet - ClosedHashSetCell. This class represents a single cell in the
+    ClosedHashSet, and each cell contains value and flag. When I try deleting value, the method checks if this
+    cell isn't empty, and if the value in this cell is the value I want to delete. If one of the answers is
+    no, the method returns false, and we checks the same but in the next cell (which chosen by the clamp). If
+    I succeed in deleting the value, the method returns true, and the deletion progress continues. The next
+    step in this progress is to reduce by 1 the numberOfElements ClosedHasSet has. After every deletion,
+    I checked if the loadFactor is smaller then the given one (it can be default or chosen), if it's smaller
+    I made reHashing to the hashSet to a new hashSet with a capacity of half of the original capacity. After
+    reHashing the method returns true - the deletion was a success!
+
+
+=============================
+=  Implementation details   =
+=============================
+
+
+
+=============================
+=    Answers to questions   =
+=============================
+4. analyze the results -
+    1. The time it took to initialize each data structure with data1's words:
+       OpenHashSet = 36231
+       CloseHashSet = 337590
+       **TreeSet = 61**
+       LinkedList = 34875
+       HashSet = 62
+
+    2. The time it took to initialize each data structure with data2's words:
+        OpenHashSet = 372
+        CloseHashSet = 61
+        TreeSet = 35
+        LinkedList = 20081
+        **HashSet = 6**
+
+    3.                        initialize data1    initialize data2
+       OpenHashSet                 36231                372
+       CloseHashSet                337590               61
+       TreeSet                       61                 35
+       LinkedList                  34875               20081
+       HashSet                       62                  6
+
+    4. The different data structures for contains(”hi”) after data1.txt initialization:
+        OpenHashSet = 1580
+        **ClosedHashSet = 1186**
+        TreeSet = 4345
+        LinkedList = 876248
+        HashSet = 1580
+
+    5. The data structures for contains(“-13170890158”) after data1.txt initialization:
+        OpenHashSet = 871507
+        ClosedHashSet = 18316663
+        **TreeSet = 5531**
+        LinkedList = 1808594
+        HashSet = 8691
+
+    6.                         contains(“hi”)    contains(“-13170890158”)
+        OpenHashSet                 1580                871507
+        CloseHashSet                1186               18316663
+        TreeSet                     4345                 5531
+        LinkedList                 876248               1808594
+        HashSet                     1580                 8691
+
+    7. The different data structures for contains(”hi”) after data2.txt initialization:
+        OpenHashSet = 4345
+        ClosedHashSet = 4346
+        TreeSet = 11061
+        LinkedList = 1709039
+        **HashSet = 1975**
+
+    8. The data structures for contains(“23”) after data2.txt initialization:
+        OpenHashSet = 4345
+        **ClosedHashSet = 3556**
+        TreeSet = 9876
+        LinkedList = 5136
+        HashSet = 6321
+    9.                        contains(“hi”)    contains(“23”)
+       OpenHashSet                 4345             4345
+       CloseHashSet                4346             3356
+       TreeSet                     11061            9876
+       LinkedList                 1709039           5136
+       HashSet                     1975             6321
+
+5. The number of iteration for warm-up : 50000.
+
+6. The discussion about the results:
+    1. Data1 is the data which contains all the words with a single hash.
+        OpenHashSet - The bad results of the contains in this hashSet happens because it puts all the words in
+            one cell at linkedList. When it searches for a word, it has to move over all the linkedList until
+            it finds the correct word. The addData using the contains method, therefore it takes long time to
+            add data to the OpenHashSet.
+        CloseHashSet - The bad results of the addData in this hashSet happens because it try putting all the
+            words in a single cell, but every cell can contain only one word. Therefore, it uses clamp to
+            search for the next spot for each word. But, because the hash of every word is the same, the next
+            spot for every word will still be at the same spot, so it has to search at all the hashSet before
+            it finds an empty spot for the word. Contains uses the same idea, and because of that it has to
+            search all over the hashSet before it decides if the word inside.
+
+
+    2. Strengths and weaknesses for each data structure:
+        OpenHashSet:
+            Strengths : When the OpenHashSet gets a data with words that have different hashes, the contains
+                and adding is relatively fast.
+            Weaknesses : When the OpenHashSet gets a data with words that have the same hash, the contains and
+                adding is relatively slow.
+
+        ClosedHashSet :
+            Strengths : When the ClosedHashSet gets a data with words that have different hashes, the contains
+                and adding is relatively fast.
+            Weaknesses : When the OpenHashSet gets a data with words that have the same hash, the contains and
+                adding is relatively slow.
+
+        TreeSet :
+            The treeSet doesn't have any strengths or weaknesses. It doesn't matter if the data has words with
+            the same hash or with different hash. In most of the cases, the treeSet is located at the middle.
+            (the only exceptional is at contains a negative number, over there is the slowest).
+
+        LinkedList :
+            The linkedList has only weaknesses, for everything it is one of the most slow hashSets.
+
+        HashSet :
+            Strengths : The HashSet can add every type of data pretty fast. It doesn't matter if the data is
+                full with words with a single hash or different hash, it adds the data very fast.
+
+
+    3. When there is data with the same hash, the OpenHashSet adding the data much faster then the
+        ClosedHashSet. But, when the data has words with different hash, the ClosedHashSet adding the data is
+        faster than the OpenHashSet, because the OpenHashSet works like linkedList and this action takes a
+        lots of time. When we check the contains, almost everything, except the negative, it's almost the same
+        At the negative number, the ClosedHashSet is much slower.
+
+
+    4. Compare to HashSet, my implementations are much worse at the adding data, and it doesn't matter if
+        there is the same hash or different. But, when we looked at the contains' results, it's inconclusive,
+        sometime, the HashSet is faster, and at other times, my implementations are faster.
+
+
+    5. It surprised me that the test of contains negative number is much slower than any other contains'
+        examination. But, it didn't surprised me that the linkedList is the slowest one at everything.
+
+
+    6. It surprised me that the java's built in HashSet is much faster then my implementations. My
+        implementation are kind of HashSet. Therefore, I would expect that they will have the same running
+        time more or less. In my opinion, it might happens because the people who wrote this class had decided
+        on a different things that are in each cell at the hashSet, and it was smarter way to divide the data
+        to the cells.
+
+
+
+
+
+
+
